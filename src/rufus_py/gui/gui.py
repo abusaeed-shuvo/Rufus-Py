@@ -6,9 +6,9 @@ from pathlib import Path
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QGridLayout, QLabel, QComboBox, 
                              QPushButton, QProgressBar, QCheckBox, 
-                             QMessageBox, QDialog, QTextEdit, QFileDialog, 
+                             QMessageBox, QDialog, QTextEdit, QFileDialog,
                              QLineEdit, QFrame, QStatusBar, QToolButton, QSpacerItem)
-from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal, QPoint, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QFont
 
 from rufus_py.drives import states
@@ -31,6 +31,85 @@ class LogWindow(QDialog):
         layout.addWidget(self.log_text)
         self.setLayout(layout)
 
+class Notification(QFrame):
+    def __init__(self, message, notification_type="info", duration=3000, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | 
+                           Qt.WindowType.Tool | 
+                           Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)   
+        
+        colors = {
+            'info': '#3498db',
+            'success': '#2ecc71',
+        }
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        self.label = QLabel(message)
+        self.label.setWordWrap(True)
+        self.label.setStyleSheet(f"""
+            QLabel {{
+                background-color: {colors.get(notification_type.lower(), '#333333')};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: bold;
+            }}
+        """)
+        layout.addWidget(self.label)
+        
+        self.fade_in = QPropertyAnimation(self, b"windowOpacity")
+        self.fade_in.setDuration(200)
+        self.fade_in.setStartValue(0.0)
+        self.fade_in.setEndValue(1.0)
+        
+        self.adjustSize()
+        self.position_notification()
+        self.show()
+        self.fade_in.start()
+        
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.fade_out)
+        self.timer.setSingleShot(True)
+        self.timer.start(duration)
+    
+    def fade_out(self):
+        self.fade_out_anim = QPropertyAnimation(self, b"windowOpacity")
+        self.fade_out_anim.setDuration(200)
+        self.fade_out_anim.setStartValue(1.0)
+        self.fade_out_anim.setEndValue(0.0)
+        self.fade_out_anim.finished.connect(self.close)
+        self.fade_out_anim.start()
+    
+    def position_notification(self, index=0):
+        screen = QApplication.primaryScreen().availableGeometry()
+        
+        if self.parent() and isinstance(self.parent(), QWidget):
+            parent_geo = self.parent().frameGeometry()
+            if screen.contains(parent_geo.topLeft()):
+                x = parent_geo.right() - self.width() - 20
+                y = parent_geo.bottom() - (self.height() + 10) * (index + 1) - 20
+                self.move(int(x), int(y))
+                return
+        
+        x = screen.right() - self.width() - 20
+        y = screen.bottom() - (self.height() + 10) * (index + 1) - 20
+        self.move(int(x), int(y))
+
+class NotificationManager:
+    def __init__(self, parent=None):
+        self.parent = parent
+        self.notifications = []
+    
+    def show(self, message, notification_type='info', duration=3000):
+        notification = Notification(message, notification_type, duration, self.parent)
+        self.notifications.append(notification)
+        notification.position_notification(len(self.notifications) - 1)
+        notification.show()
+        notification.destroyed.connect(lambda: self.notifications.remove(notification))
 
 class AboutWindow(QDialog):
     def __init__(self):
@@ -74,8 +153,6 @@ class FlashWorker(QThread):
             self.progress.emit(f"Error: {str(e)}")
             self.finished.emit(False)
 
-def on_usb_added(self, node):
-    QMessageBox.information(self, "USB Inserted", f"{node} connected")
 
 class Rufus(QMainWindow):
     def __init__(self, usb_devices=None):
@@ -86,13 +163,15 @@ class Rufus(QMainWindow):
         
         self.usb_devices = usb_devices or {}
         self.setWindowTitle("Rufus")
-        self.setFixedSize(640, 700)
+        self.setFixedSize(640, 690)
         self.flash_worker = None
         self.log_window = None
         self.about_window = None
         
         self._apply_styles()
         self.init_ui()
+
+        self.notifier = NotificationManager(self)
 
     def _apply_styles(self):
         """Apply stylesheet to the main window"""
@@ -228,6 +307,8 @@ class Rufus(QMainWindow):
             }
         """)
 
+
+
     def create_header(self, text):
         """Create a section header with a horizontal line"""
         layout = QHBoxLayout()
@@ -253,7 +334,7 @@ class Rufus(QMainWindow):
             self.combo_device.addItem(node)
 
     def on_usb_added(self, node):
-        QMessageBox.information(self, "USB Inserted", f"{node} connected")
+        self.notifier.show(f"✓ {node} connected", notification_type='success', duration=3000)
 
     def create_refresh_button(self):
         btn = QToolButton()
@@ -696,6 +777,19 @@ class Rufus(QMainWindow):
         elif event.key() == Qt.Key.Key_F5:
             self.refresh_usb_devices()
         super().keyPressEvent(event)
+
+    def position_notification(self):
+        if self.parent():
+            parent_rect = self.parent().geometry()
+            x = parent_rect.right() - self.width() - 20
+            y = parent_rect.bottom() - self.height() - 20
+            self.move(x, y)
+        else:
+            # Fallback to screen corner
+            screen = QApplication.primaryScreen().geometry()
+            x = screen.right() - self.width() - 20
+            y = screen.bottom() - self.height() - 20
+            self.move(x, y)
 
 
 if __name__ == "__main__":
