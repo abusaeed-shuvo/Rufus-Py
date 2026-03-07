@@ -1,4 +1,4 @@
-# lufus
+# Lufus
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Discord](https://img.shields.io/discord/1477694881127469202?style=flat\&logo=https%3A%2F%2Fcdn.discordapp.com%2Ficons%2F1477694881127469202%2F1b2c4e8defc9220de11098108fa1ed81.webp%3Fsize%3D256\&logoColor=rgb\&label=Join%20Server\&link=https%3A%2F%2Fdiscord.gg%2FTMnXwezsyV)
@@ -8,7 +8,7 @@
 
 **lufus** is currently in **Beta**.
 
-It is a physical drive imaging and formatting utility written in Python, inspired by **lufus**, with the goal of delivering a greater experience for Linux users.
+It is a physical drive imaging and formatting utility written in Python, inspired by **Rufus**, with the goal of delivering a greater experience for Linux users.
 
 While core functionality is being implemented and refined, the project is still under active development. Users should expect bugs, incomplete features, and ongoing structural changes.
 
