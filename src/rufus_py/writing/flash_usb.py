@@ -63,17 +63,17 @@ def FlashUSB(iso_path, usb_mount_path) -> bool:
     #     print(f"Aborting: {raw_device} is not a removable device.")
     #     return False
 
-    # try:
-    #     dd_args = ["sudo", "dd", f"if={iso_path}", f"of={raw_device}", "bs=4M", "status=progress", "conv=fdatasync"]
-    #     print(f"Flashing USB with command: {' '.join(dd_args)}")
-    # except FileNotFoundError:
-    #     pkexecNotFound()
-    # except subprocess.CalledProcessError:
-    #     FormatFail()
-    # except Exception as e:
-    #     print(f"(FLASHFAIL) DEBUG: Unexpected error type: {type(e).__name__}")
-    #     print(f"DEBUG: Error message: {e}")
-    #     unexpected()
+    try:
+        dd_args = ["dd", f"if={iso_path}", f"of={raw_device}", "bs=4M", "status=progress", "conv=fdatasync"]
+        print(f"Flashing USB with command: {' '.join(dd_args)}")
+    except FileNotFoundError:
+        pkexecNotFound()
+    except subprocess.CalledProcessError:
+        FormatFail()
+    except Exception as e:
+        print(f"(FLASHFAIL) DEBUG: Unexpected error type: {type(e).__name__}")
+        print(f"DEBUG: Error message: {e}")
+        unexpected()
 
     # try:
     #     if check_iso_signature(iso_path):
