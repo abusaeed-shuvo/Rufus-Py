@@ -345,6 +345,7 @@ class lufus(QMainWindow):
 
         self._apply_styles()
         self.init_ui()
+        self.setAcceptDrops(True)
         self.notifier = NotificationManager(self)
 
         self.log_message("lufus started")
@@ -373,7 +374,7 @@ class lufus(QMainWindow):
             }
             QComboBox, QLineEdit {
                 border: 1px solid #D0D0D0;
-                border-radius: 2px;
+                border-radius: 6px;
                 padding: 4px 6px;
                 background-color: white;
                 min-height: 24px;
@@ -387,11 +388,13 @@ class lufus(QMainWindow):
             QComboBox::drop-down {
                 width: 20px;
                 border-left: 1px solid #D0D0D0;
+                border-top-right-radius: 6px;
+                border-bottom-right-radius: 6px;
             }
             QPushButton {
                 background-color: #E1E1E1;
                 border: 1px solid #A0A0A0;
-                border-radius: 2px;
+                border-radius: 6px;
                 padding: 4px 15px;
                 min-height: 20px;
                 max-height: 20px;
@@ -414,7 +417,7 @@ class lufus(QMainWindow):
             #btnStart {
                 background-color: #E1E1E1;
                 border: 1px solid #A0A0A0;
-                border-radius: 2px;
+                border-radius: 6px;
                 min-height: 20px;
                 max-height: 20px;
                 min-width: 100px;
@@ -435,13 +438,12 @@ class lufus(QMainWindow):
                 border-color: #D0D0D0;
             }
             QCheckBox {
-                spacing: 2px;
+                spacing: 6px;
                 font-size: 8pt;
-                max-height:12px;
             }
             QProgressBar {
                 border: 1px solid #A0A0A0;
-                border-radius: 2px;
+                border-radius: 6px;
                 text-align: center;
                 background-color: white;
                 height: 22px;
@@ -451,11 +453,12 @@ class lufus(QMainWindow):
             }
             QProgressBar::chunk {
                 background-color: #00CC00;
+                border-radius: 6px;
             }
             QToolButton {
                 border: 1px solid #D0D0D0;
                 background-color: white;
-                border-radius: 2px;
+                border-radius: 6px;
                 padding: 4px;
                 min-width: 32px;
                 max-width: 32px;
@@ -544,6 +547,9 @@ class lufus(QMainWindow):
 
     def init_ui(self):
         """Initialize the user interface"""
+        FIELD_SPACING = 2
+        GROUP_SPACING = 10
+
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout()
@@ -551,13 +557,12 @@ class lufus(QMainWindow):
         main_layout.setContentsMargins(15, 10, 15, 10)
 
         main_layout.addLayout(self.create_header(self._T.get("header_drive_properties", "Drive Properties")))
+        main_layout.addSpacing(4)
 
         self.lbl_device = QLabel(self._T.get("lbl_device", "Device"))
-        self.lbl_device.setStyleSheet("font-weight: normal; font-size: 9pt; padding-bottom: 2px;")
+        self.lbl_device.setStyleSheet("font-weight: normal; font-size: 9pt;")
         self.combo_device = QComboBox()
-
         self._populate_device_combo()
-
         btn_refresh = self.create_refresh_button()
 
         device_row = QHBoxLayout()
@@ -566,40 +571,37 @@ class lufus(QMainWindow):
         device_row.addWidget(btn_refresh)
 
         device_layout = QVBoxLayout()
-        device_layout.setSpacing(2)
+        device_layout.setSpacing(FIELD_SPACING)
         device_layout.addWidget(self.lbl_device)
         device_layout.addLayout(device_row)
         main_layout.addLayout(device_layout)
+        main_layout.addSpacing(GROUP_SPACING)
 
         self.lbl_boot = QLabel(self._T.get("lbl_boot_selection", "Boot Selection"))
-        self.lbl_boot.setStyleSheet("font-weight: normal; font-size: 9pt; padding-bottom: 2px;")
-
-        boot_row = QHBoxLayout()
-        boot_row.setSpacing(5)
+        self.lbl_boot.setStyleSheet("font-weight: normal; font-size: 9pt;")
 
         self.combo_boot = QComboBox()
         self.combo_boot.setEditable(True)
         self.combo_boot.lineEdit().setReadOnly(True)
         self.combo_boot.addItem("installationmedia.iso")
 
-        lbl_check = QLabel("✓")
-        lbl_check.setStyleSheet("font-size: 14pt; color: #666; padding: 0 5px;")
-
         self.btn_select = QPushButton(self._T.get("btn_select", "Select"))
         self.btn_select.clicked.connect(self.browse_file)
 
+        boot_row = QHBoxLayout()
+        boot_row.setSpacing(5)
         boot_row.addWidget(self.combo_boot, 1)
-        boot_row.addWidget(lbl_check)
         boot_row.addWidget(self.btn_select)
 
         boot_layout = QVBoxLayout()
-        boot_layout.setSpacing(2)
+        boot_layout.setSpacing(FIELD_SPACING)
         boot_layout.addWidget(self.lbl_boot)
         boot_layout.addLayout(boot_row)
         main_layout.addLayout(boot_layout)
+        main_layout.addSpacing(GROUP_SPACING)
 
         self.lbl_image = QLabel(self._T.get("lbl_image_option", "Image Option"))
-        self.lbl_image.setStyleSheet("font-weight: normal; font-size: 9pt; padding-bottom: 2px;")
+        self.lbl_image.setStyleSheet("font-weight: normal; font-size: 9pt;")
         self.combo_image_option = QComboBox()
         self.combo_image_option.addItem(self._T.get("combo_image_windows", "Windows"))
         self.combo_image_option.addItem(self._T.get("combo_image_linux", "Linux"))
@@ -607,15 +609,11 @@ class lufus(QMainWindow):
         self.combo_image_option.currentTextChanged.connect(self.update_image_option)
 
         image_layout = QVBoxLayout()
-        image_layout.setSpacing(2)
+        image_layout.setSpacing(FIELD_SPACING)
         image_layout.addWidget(self.lbl_image)
         image_layout.addWidget(self.combo_image_option)
         main_layout.addLayout(image_layout)
-
-        grid_part = QGridLayout()
-        grid_part.setSpacing(10)
-        grid_part.setColumnStretch(1, 1)
-        grid_part.setColumnStretch(3, 1)
+        main_layout.addSpacing(GROUP_SPACING)
 
         self.lbl_part = QLabel(self._T.get("lbl_partition_scheme", "Partition Scheme"))
         self.lbl_part.setStyleSheet("font-weight: normal; font-size: 9pt;")
@@ -631,31 +629,33 @@ class lufus(QMainWindow):
         self.combo_target.addItem(self._T.get("combo_target_bios", "BIOS"))
         self.combo_target.currentTextChanged.connect(self.update_target_system)
 
-        grid_part.addWidget(self.lbl_part, 0, 0)
+        grid_part = QGridLayout()
+        grid_part.setHorizontalSpacing(10)
+        grid_part.setVerticalSpacing(FIELD_SPACING)
+        grid_part.setColumnStretch(0, 1)
+        grid_part.setColumnStretch(1, 1)
+        grid_part.addWidget(self.lbl_part,       0, 0)
         grid_part.addWidget(self.combo_partition, 1, 0)
-        grid_part.addWidget(self.lbl_target, 0, 2)
-        grid_part.addWidget(self.combo_target, 1, 2)
+        grid_part.addWidget(self.lbl_target,      0, 1)
+        grid_part.addWidget(self.combo_target,    1, 1)
         main_layout.addLayout(grid_part)
 
-        main_layout.addSpacing(15)
+        main_layout.addSpacing(16)
 
         main_layout.addLayout(self.create_header(self._T.get("header_format_options", "Format Options")))
+        main_layout.addSpacing(4)
 
         self.lbl_vol = QLabel(self._T.get("lbl_volume_label", "Volume Label"))
-        self.lbl_vol.setStyleSheet("font-weight: normal; font-size: 9pt; padding-bottom: 2px;")
+        self.lbl_vol.setStyleSheet("font-weight: normal; font-size: 9pt;")
         self.input_label = QLineEdit(self._T.get("lbl_volume_label", "Volume Label"))
         self.input_label.textChanged.connect(self.update_new_label)
 
         vol_layout = QVBoxLayout()
-        vol_layout.setSpacing(2)
+        vol_layout.setSpacing(FIELD_SPACING)
         vol_layout.addWidget(self.lbl_vol)
         vol_layout.addWidget(self.input_label)
         main_layout.addLayout(vol_layout)
-
-        grid_fmt = QGridLayout()
-        grid_fmt.setSpacing(10)
-        grid_fmt.setColumnStretch(1, 1)
-        grid_fmt.setColumnStretch(3, 1)
+        main_layout.addSpacing(GROUP_SPACING)
 
         self.lbl_fs = QLabel(self._T.get("lbl_file_system", "File System"))
         self.lbl_fs.setStyleSheet("font-weight: normal; font-size: 9pt;")
@@ -664,13 +664,6 @@ class lufus(QMainWindow):
         self.combo_fs.addItems(self.all_fs_options)
         self.combo_fs.currentTextChanged.connect(self.updateFS)
 
-        self.lbl_flash = QLabel(self._T.get("lbl_flash_option", "Flash Option"))
-        self.lbl_flash.setStyleSheet("font-weight: normal; font-size: 9pt;")
-        self.combo_flash = QComboBox()
-        self.all_flash_options = [self._T.get("combo_flash_iso", "ISO"), self._T.get("combo_flash_woe", "WoeUSB"), self._T.get("combo_flash_ventoy", "Ventoy"), self._T.get("combo_flash_dd", "DD")]
-        self.combo_flash.addItems(self.all_flash_options)
-        self.combo_flash.currentTextChanged.connect(self.updateflash)
-
         self.lbl_cluster = QLabel(self._T.get("lbl_cluster_size", "Cluster Size"))
         self.lbl_cluster.setStyleSheet("font-weight: normal; font-size: 9pt;")
         self.combo_cluster = QComboBox()
@@ -678,13 +671,32 @@ class lufus(QMainWindow):
         self.combo_cluster.addItem(self._T.get("combo_cluster_8192", "8192"))
         self.combo_cluster.currentTextChanged.connect(self.update_cluster_size)
 
-        grid_fmt.addWidget(self.lbl_fs, 0, 0)
-        grid_fmt.addWidget(self.combo_fs, 1, 0)
-        grid_fmt.addWidget(self.lbl_flash, 0, 5)
-        grid_fmt.addWidget(self.combo_flash, 1, 5)
-        grid_fmt.addWidget(self.lbl_cluster, 0, 2)
-        grid_fmt.addWidget(self.combo_cluster, 1, 2)
+        self.lbl_flash = QLabel(self._T.get("lbl_flash_option", "Flash Option"))
+        self.lbl_flash.setStyleSheet("font-weight: normal; font-size: 9pt;")
+        self.combo_flash = QComboBox()
+        self.all_flash_options = [
+            self._T.get("combo_flash_iso", "ISO"),
+            self._T.get("combo_flash_woe", "WoeUSB"),
+            self._T.get("combo_flash_ventoy", "Ventoy"),
+            self._T.get("combo_flash_dd", "DD"),
+        ]
+        self.combo_flash.addItems(self.all_flash_options)
+        self.combo_flash.currentTextChanged.connect(self.updateflash)
+
+        grid_fmt = QGridLayout()
+        grid_fmt.setHorizontalSpacing(10)
+        grid_fmt.setVerticalSpacing(FIELD_SPACING)
+        grid_fmt.setColumnStretch(0, 1)
+        grid_fmt.setColumnStretch(1, 1)
+        grid_fmt.setColumnStretch(2, 1)
+        grid_fmt.addWidget(self.lbl_fs,      0, 0)
+        grid_fmt.addWidget(self.combo_fs,    1, 0)
+        grid_fmt.addWidget(self.lbl_cluster, 0, 1)
+        grid_fmt.addWidget(self.combo_cluster, 1, 1)
+        grid_fmt.addWidget(self.lbl_flash,   0, 2)
+        grid_fmt.addWidget(self.combo_flash, 1, 2)
         main_layout.addLayout(grid_fmt)
+        main_layout.addSpacing(GROUP_SPACING)
 
         self.chk_quick = QCheckBox(self._T.get("chk_quick_format", "Quick Format"))
         self.chk_quick.setChecked(True)
@@ -694,7 +706,6 @@ class lufus(QMainWindow):
         self.chk_extended.setChecked(True)
         self.chk_extended.stateChanged.connect(self.update_create_extended)
 
-        bad_blocks_row = QHBoxLayout()
         self.chk_badblocks = QCheckBox(self._T.get("chk_bad_blocks", "Check for Bad Blocks"))
         self.combo_badblocks = QComboBox()
         self.combo_badblocks.addItem(self._T.get("combo_badblocks_1pass", "1 Pass"))
@@ -702,32 +713,30 @@ class lufus(QMainWindow):
         self.combo_badblocks.setEnabled(False)
         self.chk_badblocks.stateChanged.connect(self.update_check_bad)
 
+        bad_blocks_row = QHBoxLayout()
+        bad_blocks_row.setSpacing(6)
         bad_blocks_row.addWidget(self.chk_badblocks)
         bad_blocks_row.addWidget(self.combo_badblocks)
         bad_blocks_row.addStretch()
 
         chk_layout = QVBoxLayout()
-        chk_layout.setSpacing(5)
+        chk_layout.setSpacing(6)
         chk_layout.addWidget(self.chk_quick)
         chk_layout.addWidget(self.chk_extended)
         chk_layout.addLayout(bad_blocks_row)
         main_layout.addLayout(chk_layout)
 
-        main_layout.addSpacing(15)
+        main_layout.addSpacing(16)
 
         main_layout.addLayout(self.create_header(self._T.get("header_status", "Status")))
+        main_layout.addSpacing(4)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("")
         main_layout.addWidget(self.progress_bar)
 
-        bottom_controls = QHBoxLayout()
-        bottom_controls.setSpacing(10)
-        bottom_controls.setContentsMargins(0, 10, 0, 0)
-
-        icons_layout = QHBoxLayout()
-        icons_layout.setSpacing(5)
+        main_layout.addSpacing(10)
 
         btn_icon1 = QToolButton()
         btn_icon1.setText("🌐")
@@ -749,6 +758,8 @@ class lufus(QMainWindow):
         btn_icon4.setToolTip(self._T.get("tooltip_log", "Log"))
         btn_icon4.clicked.connect(self.show_log)
 
+        icons_layout = QHBoxLayout()
+        icons_layout.setSpacing(5)
         icons_layout.addWidget(btn_icon1)
         icons_layout.addWidget(btn_icon2)
         icons_layout.addWidget(btn_icon3)
@@ -769,11 +780,12 @@ class lufus(QMainWindow):
         btn_layout.addWidget(self.btn_start)
         btn_layout.addWidget(self.btn_cancel)
 
+        bottom_controls = QHBoxLayout()
+        bottom_controls.setSpacing(10)
         bottom_controls.addLayout(icons_layout, 1)
         bottom_controls.addLayout(btn_layout)
         main_layout.addLayout(bottom_controls)
 
-        main_layout.addStretch()
         central_widget.setLayout(main_layout)
 
         self.statusBar = QStatusBar()
@@ -887,6 +899,39 @@ class lufus(QMainWindow):
         states.check_bad = 0 if self.chk_badblocks.isChecked() else 1
         self.combo_badblocks.setEnabled(self.chk_badblocks.isChecked())
         self.log_message(f"Bad block check: {'enabled' if self.chk_badblocks.isChecked() else 'disabled'}")
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if any(url.toLocalFile().lower().endswith(".iso") for url in urls):
+                event.acceptProposedAction()
+                return
+        event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if any(url.toLocalFile().lower().endswith(".iso") for url in urls):
+                event.acceptProposedAction()
+                return
+        event.ignore()
+
+    def dropEvent(self, event):
+        urls = event.mimeData().urls()
+        iso_files = [url.toLocalFile() for url in urls if url.toLocalFile().lower().endswith(".iso")]
+        if iso_files:
+            file_name = iso_files[0]
+            file_size = os.path.getsize(file_name)
+            states.iso_path = file_name
+            clean_name = file_name.split("/")[-1].split("\\")[-1]
+            self.combo_boot.setItemText(0, clean_name)
+            self.input_label.setText(clean_name.split('.')[0].upper())
+            self.log_message(f"Image selected via drag-and-drop: {file_name}")
+            self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
+            self.notifier.show(f"✓ {clean_name} loaded", notification_type='success', duration=3000)
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
     def browse_file(self):
         file_name, _ = QFileDialog.getOpenFileName(self, self._T.get("dlg_select_image_title", "Select Image"), "", self._T.get("dlg_select_image_filter", "ISO Files (*.iso)"))
