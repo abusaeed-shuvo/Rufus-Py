@@ -2,6 +2,9 @@ import psutil
 import hashlib
 from pathlib import Path
 import os
+from lufus.lufus_logging import get_logger
+
+log = get_logger(__name__)
 
 
 def _is_valid_sha256_hex(hash_value: str) -> bool:
@@ -21,38 +24,42 @@ def check_iso_signature(file_path: str) -> bool:
     """
     p = Path(file_path)
     if not p.is_file():
-        print(f"ISO signature check: {file_path} is not a valid file")
+        log.error("ISO signature check: %s is not a valid file", file_path)
         return False
 
     file_size = p.stat().st_size
-    print(f"ISO signature check: opening {file_path} ({file_size:,} bytes)")
+    log.info("ISO signature check: opening %s (%d bytes)", file_path, file_size)
 
     try:
         with p.open("rb") as f:
             f.seek(32768)
             data = f.read(7)
             if len(data) < 7:
-                print(
-                    f"ISO signature check: file too small to contain a PVD (read {len(data)} bytes at offset 32768, need 7)"
+                log.error(
+                    "ISO signature check: file too small to contain a PVD "
+                    "(read %d bytes at offset 32768, need 7)",
+                    len(data),
                 )
                 return False
 
             vd_type, ident, version = data[0], data[1:6], data[6]
-            print(
-                f"ISO signature check: PVD bytes -> type=0x{vd_type:02X}, ident={ident}, version=0x{version:02X}"
+            log.info(
+                "ISO signature check: PVD bytes -> type=0x%02X, ident=%s, version=0x%02X",
+                vd_type, ident, version,
             )
 
             if vd_type == 0x01 and ident == b"CD001" and version == 0x01:
-                print(f"ISO signature check: PASSED for {file_path}")
+                log.info("ISO signature check: PASSED for %s", file_path)
                 return True
             else:
-                print(
-                    f"ISO signature check: FAILED - expected type=0x01/ident=CD001/version=0x01, "
-                    f"got type=0x{vd_type:02X}/ident={ident}/version=0x{version:02X}"
+                log.error(
+                    "ISO signature check: FAILED - expected type=0x01/ident=CD001/version=0x01, "
+                    "got type=0x%02X/ident=%s/version=0x%02X",
+                    vd_type, ident, version,
                 )
                 return False
     except OSError as err:
-        print(f"ISO signature check: OSError reading {file_path}: {err}")
+        log.error("ISO signature check: OSError reading %s: %s", file_path, err)
 
     return False
 
@@ -73,15 +80,16 @@ def _parent_block_device(device_node: str) -> str | None:
 def _resolve_device_node(usb_mount_path: str) -> str | None:
     """Resolve a mount path to its underlying device node for dd."""
     normalized = os.path.normpath(usb_mount_path)
-    print(f"Resolving device node for mount path: {normalized}")
+    log.info("Resolving device node for mount path: %s", normalized)
     for part in psutil.disk_partitions(all=True):
         if os.path.normpath(part.mountpoint) == normalized:
             result = _parent_block_device(part.device) or part.device
-            print(
-                f"Resolved {normalized} -> device={part.device}, raw block device={result}"
+            log.info(
+                "Resolved %s -> device=%s, raw block device=%s",
+                normalized, part.device, result,
             )
             return result
-    print(f"Could not resolve device node for: {normalized}")
+    log.warning("Could not resolve device node for: %s", normalized)
     return None
 
 
@@ -89,15 +97,15 @@ def check_sha256(file_path: str, expected_hash: str) -> bool:
     """Check the SHA256 hash of a file against an expected value."""
     p = Path(file_path)
     if not p.is_file():
-        print(f"SHA256 check: {file_path} is not a valid file")
+        log.error("SHA256 check: %s is not a valid file", file_path)
         return False
 
     file_size = p.stat().st_size
-    print(f"SHA256 check: starting hash of {file_path} ({file_size:,} bytes)")
+    log.info("SHA256 check: starting hash of %s (%d bytes)", file_path, file_size)
 
     normalized_expected_hash = expected_hash.strip().lower()
     if not _is_valid_sha256_hex(normalized_expected_hash):
-        print("SHA256 check: provided expected hash is not valid 64-char hex")
+        log.error("SHA256 check: provided expected hash is not valid 64-char hex")
         return False
 
     sha256 = hashlib.sha256()
@@ -108,19 +116,20 @@ def check_sha256(file_path: str, expected_hash: str) -> bool:
                 sha256.update(chunk)
                 bytes_read += len(chunk)
         calculated_hash = sha256.hexdigest()
-        print(f"SHA256 check: hashed {bytes_read:,} bytes")
-        print(f"SHA256 check: expected  {normalized_expected_hash}")
-        print(f"SHA256 check: calculated {calculated_hash}")
+        log.info("SHA256 check: hashed %d bytes", bytes_read)
+        log.info("SHA256 check: expected   %s", normalized_expected_hash)
+        log.info("SHA256 check: calculated %s", calculated_hash)
         if calculated_hash == normalized_expected_hash:
-            print(f"SHA256 check: MATCH for {file_path}")
+            log.info("SHA256 check: MATCH for %s", file_path)
             return True
         else:
-            print(
-                f"SHA256 check: MISMATCH for {file_path} - file may be corrupted or tampered with"
+            log.error(
+                "SHA256 check: MISMATCH for %s - file may be corrupted or tampered with",
+                file_path,
             )
             return False
     except OSError as err:
-        print(f"SHA256 check: OSError reading {file_path}: {err}")
+        log.error("SHA256 check: OSError reading %s: %s", file_path, err)
 
     return False
 
