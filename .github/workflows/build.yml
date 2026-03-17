@@ -1,6 +1,10 @@
 name: Build AppImage
 
-on: push
+on:
+  push:
+    tags:
+      - "v*"
+      - "*-beta"
 
 jobs:
   build:
@@ -36,3 +40,9 @@ jobs:
           name: Lufus-AppImage
           path: "*.AppImage"
           if-no-files-found: error
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: "Lufus-x86_64.AppImage"
