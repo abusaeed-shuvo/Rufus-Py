@@ -1,0 +1,40 @@
+{
+    "colors": {
+        "uni_bg": "#1E1E1E",
+        "bg": "#252526",
+        "fg": "#D4D4D4",
+        "accent": "#0078D7",
+        "accent_hover": "#1A8AD4",
+        "border_light": "#3C3C3C",
+        "border_dark": "#555555",
+        "input_bg": "#1E1E1E",
+        "input_bg_top": "#2A2A2A",
+        "selected_text": "#FFFFFF",
+        "button_bg": "#333333",
+        "button_bg_top": "#3C3C3C",
+        "button_hover_bg": "#094771",
+        "button_hover_bg_top": "#0E5B8A",
+        "button_pressed_bg": "#062F4A",
+        "button_disabled_fg": "#6B6B6B",
+        "button_disabled_bg": "#2D2D2D",
+        "button_disabled_border": "#3C3C3C",
+        "tool_button_bg": "#1E1E1E",
+        "tool_button_bg_top": "#2A2A2A",
+        "tool_button_hover_bg": "#094771",
+        "tool_button_pressed_bg": "#062F4A",
+        "progress_chunk": "#0078D7",
+        "progress_border": "#555555",
+        "btn_start_pressed": "#005A9E"
+
+
+
+    },
+    "dimensions": {
+        "use_gradient": 1,
+        "btn_border_width": 1,
+        "combo_border_width": 1
+    }
+}
+
+   
+

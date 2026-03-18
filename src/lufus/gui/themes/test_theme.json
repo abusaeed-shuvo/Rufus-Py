@@ -1,0 +1,46 @@
+{
+    "colors": {
+        "uni_bg": "#FFE4E1",
+        "bg": "#FFF0F5",
+        "fg": "#FF1493",
+        "accent": "#FF69B4",
+        "accent_hover": "#FFB6C1",
+        "border_light": "#FFB6C1",
+        "border_dark": "#FF69B4",
+        "input_bg": "#FFFFFF",
+        "input_bg_top": "#FFF0F5",
+        "selected_text": "#FFFFFF",
+        "button_bg": "#FFB6C1",
+        "button_bg_top": "#FFC0CB",
+        "button_hover_bg": "#FF69B4",
+        "button_hover_bg_top": "#FF85C1",
+        "button_pressed_bg": "#FF1493",
+        "button_disabled_fg": "#FFB6C1",
+        "button_disabled_bg": "#FFF0F5",
+        "button_disabled_border": "#FFB6C1",
+        "tool_button_bg": "#FFF0F5",
+        "tool_button_bg_top": "#FFE4E1",
+        "tool_button_hover_bg": "#FF69B4",
+        "tool_button_pressed_bg": "#FF1493",
+        "progress_chunk": "#FF1493",
+        "progress_border": "#FF69B4",
+        "btn_start_pressed": "#C71585"
+    },
+
+    "fonts": {
+    "family": "Comic Neue, Comic Sans MS, cursive",
+    "base": 15,
+    "small": 12,
+    "header": 28,
+    "tool": 18,
+    "label": 15
+    },
+
+    "dimensions": {
+        "btn_radius": 15,
+        "combo_radius": 15,
+        "use_gradient": 1,
+        "btn_border_width": 2,
+        "combo_border_width": 2
+    }
+}

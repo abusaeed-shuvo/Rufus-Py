@@ -562,21 +562,18 @@ class lufus(QMainWindow):
         """load json values, apply via .qss, all that yap is in the themes folder :3"""
         S = self._S
         APP_NAME = "Lufus"
-
         theme_dir = Path(__file__).parent / 'themes'
         default_theme_path = theme_dir / 'default_theme.json'
         template_path = theme_dir / 'style_template.qss'
-
         user_config_dir_path = Path(user_config_dir(APP_NAME, roaming=True))
-        user_theme_path = user_config_path = user_config_dir_path / 'user_theme.json'
-        
+        user_theme_path = user_config_dir_path / 'user_theme.json'
 
         try:
             with open(default_theme_path, 'r', encoding='utf-8') as fr:
                 theme = json.load(fr)
-        except FileNotFoundError as e:
-            # Fallback if this doesn't bother to work... -_-
+        except FileNotFoundError:
             print("WARNING: no theme applied, json didn't load up in _apply_styles, gui.py.")
+            return
 
         if os.path.exists(user_theme_path):
             try:
@@ -588,17 +585,25 @@ class lufus(QMainWindow):
             except Exception as e:
                 print(f"Error loading user theme: {e}")
 
+        use_gradient = int(theme['dimensions'].get('use_gradient', 1))
+
+        NO_SCALE_KEYS = {'use_gradient', 'btn_border_width', 'combo_border_width'}
+        NO_SCALE_FONT_KEYS = {'family'}
+
         scaled_theme = {
-                'colors': theme['colors'].copy(),
-                'fonts': {},
-                'dimensions': {}
-            }
+            'colors': theme['colors'].copy(),
+            'fonts': {},
+            'dimensions': {}
+        }
 
         for key, value in theme['fonts'].items():
-            scaled_theme['fonts'][key] = S.pt(value)
+            if key in NO_SCALE_FONT_KEYS:
+                scaled_theme['fonts'][key] = value
+            else:
+                scaled_theme['fonts'][key] = S.pt(value)
 
         for key, value in theme['dimensions'].items():
-            scaled_theme['dimensions'][key] = S.px(value)
+            scaled_theme['dimensions'][key] = value if key in NO_SCALE_KEYS else S.px(value)
 
         flat_theme: Dict[str, Any] = {}
         for category, subdict in scaled_theme.items():
@@ -612,6 +617,33 @@ class lufus(QMainWindow):
             print("Error: style_template.qss not found.")
             return
 
+        if not use_gradient:
+            template = re.sub(
+                r"background:\s*qlineargradient\(\s*x1:0,\s*y1:0,\s*x2:0,\s*y2:1,\s*"
+                r"stop:0\s*\{colors_input_bg_top\},\s*stop:1\s*\{colors_input_bg\}\s*\)",
+                "background-color: {colors_input_bg}",
+                template, flags=re.MULTILINE,
+            )
+            template = re.sub(
+                r"background:\s*qlineargradient\(\s*x1:0,\s*y1:0,\s*x2:0,\s*y2:1,\s*"
+                r"stop:0\s*\{colors_button_bg_top\},\s*stop:1\s*\{colors_button_bg\}\s*\)",
+                "background-color: {colors_button_bg}",
+                template, flags=re.MULTILINE,
+            )
+            template = re.sub(
+                r"background:\s*qlineargradient\(\s*x1:0,\s*y1:0,\s*x2:0,\s*y2:1,\s*"
+                r"stop:0\s*\{colors_button_hover_bg_top\},\s*stop:1\s*\{colors_button_hover_bg\}\s*\)",
+                "background-color: {colors_button_hover_bg}",
+                template, flags=re.MULTILINE,
+            )
+            template = re.sub(
+                r"background:\s*qlineargradient\(\s*x1:0,\s*y1:0,\s*x2:0,\s*y2:1,\s*"
+                r"stop:0\s*\{colors_tool_button_bg_top\},\s*stop:1\s*\{colors_tool_button_bg\}\s*\)",
+                "background-color: {colors_tool_button_bg}",
+                template, flags=re.MULTILINE,
+            )
+
+        self._flat_theme = flat_theme
         style_sheet = template.format(**flat_theme)
         self.setStyleSheet(style_sheet)
 
@@ -697,7 +729,7 @@ class lufus(QMainWindow):
         self.combo_boot = QComboBox()
         self.combo_boot.setEditable(True)
         self.combo_boot.lineEdit().setReadOnly(True)
-        self.combo_boot.addItem("installationmedia.iso")
+        self.combo_boot.addItem(self._T.get("combo_boot_default", "installation_media.iso"))
 
         self.btn_select = QPushButton(self._T.get("btn_select", "Select"))
         self.btn_select.clicked.connect(self.browse_file)
@@ -761,7 +793,8 @@ class lufus(QMainWindow):
         main_layout.addSpacing(S.px(4))
 
         self.lbl_vol = QLabel(self._T.get("lbl_volume_label", "Volume Label"))
-        self.input_label = QLineEdit(self._T.get("lbl_volume_label", "Volume Label"))
+        self.input_label = QLineEdit()
+        self.input_label.setPlaceholderText(self._T.get("lbl_volume_label", "Volume Label"))
         self.input_label.textChanged.connect(self.update_new_label)
 
         vol_layout = QVBoxLayout()
@@ -819,20 +852,14 @@ class lufus(QMainWindow):
         self.chk_badblocks = QCheckBox(self._T.get("chk_bad_blocks", "Check for Bad Blocks"))
         self.combo_badblocks = QComboBox()
         self.combo_badblocks.addItem(self._T.get("combo_badblocks_1pass", "1 Pass"))
-        self.combo_badblocks.setFixedWidth(S.px(100))
+        self.combo_badblocks.addItem(self._T.get("combo_badblocks_2pass", "2 Pass"))
+        self.combo_badblocks.addItem(self._T.get("combo_badblocks_3pass", "3 Pass"))
         self.combo_badblocks.setEnabled(False)
         self.chk_badblocks.stateChanged.connect(self.update_check_bad)
-
-        bad_blocks_row = QHBoxLayout()
-        bad_blocks_row.setSpacing(S.px(6))
-        bad_blocks_row.addWidget(self.chk_badblocks)
-        bad_blocks_row.addWidget(self.combo_badblocks)
-        bad_blocks_row.addStretch()
-
         self.chk_verify = QCheckBox(self._T.get("chk_verify_hash", "Verify SHA256 Checksum"))
         self.chk_verify.stateChanged.connect(self.update_verify_hash)
         self.input_hash = QLineEdit()
-        self.input_hash.setPlaceholderText("Enter expected SHA256 hash here...")
+        self.input_hash.setPlaceholderText(self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here..."))
         self.input_hash.setEnabled(False)
         self.input_hash.textChanged.connect(self.update_expected_hash)
 
@@ -840,9 +867,11 @@ class lufus(QMainWindow):
         chk_layout.setSpacing(S.px(6))
         chk_layout.addWidget(self.chk_quick)
         chk_layout.addWidget(self.chk_extended)
-        chk_layout.addLayout(bad_blocks_row)
+        chk_layout.addWidget(self.chk_badblocks)
+        chk_layout.addWidget(self.combo_badblocks)
         chk_layout.addWidget(self.chk_verify)
         chk_layout.addWidget(self.input_hash)
+
         main_layout.addLayout(chk_layout)
 
         main_layout.addSpacing(S.px(6))
@@ -862,9 +891,8 @@ class lufus(QMainWindow):
         btn_icon1 = QToolButton()
         btn_icon1.setText("🌐")
         btn_icon1.setToolTip(self._T.get("tooltip_download", "Download"))
-        btn_icon1.clicked.connect(
-            lambda: webbrowser.open("http://www.github.com/hog185/lufus")
-        )
+        btn_icon1.clicked.connect(self._open_url)
+        
 
         btn_icon2 = QToolButton()
         btn_icon2.setText("ℹ")
@@ -1032,6 +1060,28 @@ class lufus(QMainWindow):
     #def update_target_system(self):
     #    states.target_system = self.combo_target.currentIndex()
     #    self.log_message(f"Target system changed to: {self.combo_target.currentText()} (index={states.target_system})")
+
+    def _open_url(self):
+        url = "http://www.github.com/hog185/lufus"
+        pkexec_uid = os.environ.get("PKEXEC_UID")
+        if pkexec_uid and os.geteuid() == 0:
+            try:
+                import pwd
+                user_info = pwd.getpwuid(int(pkexec_uid))
+                subprocess.Popen(
+                    ["runuser", "-u", user_info.pw_name, "--", "xdg-open", url],
+                    env={
+                        "DISPLAY": os.environ.get("DISPLAY", ":0"),
+                        "WAYLAND_DISPLAY": os.environ.get("WAYLAND_DISPLAY", ""),
+                        "XDG_RUNTIME_DIR": f"/run/user/{pkexec_uid}",
+                        "HOME": user_info.pw_dir,
+                        "PATH": "/usr/bin:/bin",
+                    }
+                )
+                return
+            except Exception as e:
+                self.log_message(f"Failed to open URL as user: {e}", level="WARN")
+        webbrowser.open(url)
 
     def update_new_label(self, current_text):
         states.new_label = current_text
@@ -1254,6 +1304,34 @@ class lufus(QMainWindow):
                 )
             else:
                 self.about_window.about_text.setHtml(content)
+
+        cur = self.combo_cluster.currentIndex()
+        self.combo_cluster.blockSignals(True)
+        self.combo_cluster.clear()
+        self.combo_cluster.addItem(self._T.get("combo_cluster_4096", "4096"))
+        self.combo_cluster.addItem(self._T.get("combo_cluster_8192", "8192"))
+        self.combo_cluster.setCurrentIndex(cur)
+        self.combo_cluster.blockSignals(False)
+
+        cur = self.combo_badblocks.currentIndex()
+        self.combo_badblocks.blockSignals(True)
+        self.combo_badblocks.clear()
+        self.combo_badblocks.addItem(self._T.get("combo_badblocks_1pass", "1 Pass"))
+        self.combo_badblocks.addItem(self._T.get("combo_badblocks_2pass", "2 Pass"))
+        self.combo_badblocks.addItem(self._T.get("combo_badblocks_3pass", "3 Pass"))
+        self.combo_badblocks.setCurrentIndex(cur)
+        self.combo_badblocks.blockSignals(False)
+
+        self.chk_verify.setText(self._T.get("chk_verify_hash", "Verify SHA256 Checksum"))
+        self.input_hash.setPlaceholderText(self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here..."))
+        self.input_label.setPlaceholderText(self._T.get("lbl_volume_label", "Volume Label"))
+
+        if self.combo_boot.itemText(0) == "installation_media.iso" or self.combo_boot.itemText(0) == self._T.get("combo_boot_default", "installation_media.iso"):
+            self.combo_boot.setItemText(0, self._T.get("combo_boot_default", "installation_media.iso"))
+
+        if not self.usb_devices:
+            self.combo_device.clear()
+            self.combo_device.addItem(self._T.get("no_usb_found", "No USB devices found"), None)
         self._update_flashing_options()
 
 

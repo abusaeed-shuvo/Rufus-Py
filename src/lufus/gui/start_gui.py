@@ -21,6 +21,9 @@ def ensure_root():
             "PATH": os.environ.get("PATH"),
             "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
         }
+        if "PKEXEC_UID" in os.environ:
+            gui_env["PKEXEC_UID"] = os.environ["PKEXEC_UID"]
+            
         env_args = ["env"]
         for key, value in gui_env.items():
             if value:

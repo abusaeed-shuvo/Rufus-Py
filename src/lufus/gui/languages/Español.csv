@@ -31,7 +31,7 @@ combo_target_uefi,UEFI (no CSM)
 combo_target_bios,BIOS (o UEFI-CSM)
 combo_cluster_4096,4096 bytes (Por defecto)
 combo_cluster_8192,8192 bytes
-combo_badblocks_1pass,1 pass
+combo_badblocks_1pass,1 pasada
 combo_flash_iso,Modo iso
 combo_flash_woe,Woe USB
 combo_flash_ventoy,Ventoy
@@ -89,3 +89,7 @@ Version: 1.0.0
 GitHub: github.com/hog185/lufus"
 Traducción por/translation by: saber_03  :3 
 
+combo_badblocks_2pass,2 pasadas
+combo_badblocks_3pass,3 pasadas
+chk_verify_hash,Verificar suma SHA256
+input_hash_placeholder,Ingresa el hash SHA256 esperado aquí...

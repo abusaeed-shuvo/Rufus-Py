@@ -5,16 +5,20 @@
 QMainWindow {{
     background-color: {colors_bg};
     font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-family: {fonts_family};
     font-size: {fonts_base}pt;
     color: {colors_fg};
 }}
 
 QLabel {{
     color: {colors_fg};
+    font-family: {fonts_family};
+    font-size: {fonts_label}pt;
     padding: {dimensions_label_padding}px;
 }}
 
 QLabel#sectionHeader {{
+    font-family: {fonts_family};
     font-size: {fonts_header}pt;
     font-weight: normal;
     color: {colors_fg};
@@ -29,6 +33,7 @@ QComboBox, QLineEdit {{
         stop:0 {colors_input_bg_top},
         stop:1 {colors_input_bg});
     min-height: {dimensions_combo_height}px;
+    font-family: {fonts_family};
     font-size: {fonts_base}pt;
     color: {colors_fg};
     selection-background-color: {colors_accent};
@@ -78,6 +83,7 @@ QPushButton {{
     padding: {dimensions_btn_pad_vertical}px {dimensions_btn_pad_horizontal}px;
     min-height: {dimensions_btn_min_height}px;
     min-width: {dimensions_btn_min_width}px;
+    font-family: {fonts_family};
     font-size: {fonts_base}pt;
     color: {colors_fg};
 }}
@@ -108,6 +114,7 @@ QPushButton:disabled {{
     min-height: {dimensions_btn_min_height}px;
     min-width: {dimensions_btn_min_width}px;
     padding: {dimensions_btn_pad_vertical}px {dimensions_btn_pad_horizontal}px;
+    font-family: {fonts_family};
     font-size: {fonts_base}pt;
     color: {colors_fg};
 }}
@@ -131,6 +138,7 @@ QPushButton:disabled {{
 
 QCheckBox {{
     spacing: 6px;
+    font-family: {fonts_family};
     font-size: {fonts_small}pt;
     color: {colors_fg};
 }}
@@ -169,6 +177,7 @@ QProgressBar {{
     text-align: center;
     background-color: {colors_input_bg};
     height: {dimensions_progress_height}px;
+    font-family: {fonts_family};
     font-size: {fonts_base}pt;
     color: {colors_fg};
     font-weight: bold;
@@ -190,6 +199,7 @@ QToolButton {{
     max-width:  {dimensions_tool_size}px;
     min-height: {dimensions_tool_size}px;
     max-height: {dimensions_tool_size}px;
+    font-family: {fonts_family};
     font-size: {fonts_tool}pt;
     color: {colors_fg};
 }}
@@ -212,6 +222,7 @@ QToolButton:disabled {{
 QStatusBar {{
     background-color: {colors_bg};
     border-top: 1px solid {colors_border_light};
+    font-family: {fonts_family};
     font-size: {fonts_base}pt;
     color: {colors_fg};
 }}
@@ -219,6 +230,7 @@ QStatusBar {{
 QLabel#linkLabel {{
     color: {colors_fg};
     text-decoration: none;
+    font-family: {fonts_family};
     font-size: {fonts_base}pt;
 }}
 
