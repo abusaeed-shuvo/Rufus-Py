@@ -47,6 +47,7 @@ from PyQt6.QtGui import QFont, QFontDatabase, QIcon
 from lufus.drives import states
 from lufus.drives.autodetect_usb import UsbMonitor
 from lufus.lufus_logging import get_logger
+from lufus.writing.partition_scheme import PartitionScheme
 
 # themes live here :3
 THEME_DIR = Path(__file__).parent / 'themes'
@@ -459,7 +460,12 @@ class FlashWorker(QThread):
             elif image_option == 0:  # Windows
                 if flash_mode == 0:
                     # iso mode for microslop windows
+                    scheme=PartitionScheme.SIMPLE_FAT32 # pass user selected partition schemes from here
+                #    PartitionScheme.WINDOWS_EXFAT
+                #    PartitionScheme.WINDOWS_NTFS
+                #   Are the available options 
                     success = FlashUSB(iso_path, device_node,
+                                       scheme,
                                        progress_cb=self.progress.emit,
                                        status_cb=self.status.emit)
                 else:
