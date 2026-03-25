@@ -476,6 +476,7 @@ class FlashWorker(QThread):
             else:
                 # other flash modes (Linux, Other)
                 success = FlashUSB(iso_path, device_node,
+                                   PartitionScheme.SIMPLE_FAT32,
                                    progress_cb=self.progress.emit,
                                    status_cb=self.status.emit)
 
