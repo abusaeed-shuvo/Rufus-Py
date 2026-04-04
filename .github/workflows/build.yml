@@ -5,6 +5,7 @@ on:
     tags:
       - "v*"
       - "*-beta"
+  workflow_dispatch:
 
 jobs:
   # for appimage
@@ -61,7 +62,6 @@ jobs:
   
   # for binary
   build-tarball:
-      needs: build-appimage
       runs-on: ubuntu-latest
       permissions:
         contents: write
